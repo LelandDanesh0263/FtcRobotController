@@ -17,6 +17,9 @@ public final class RobotTelemetry {
         telemetry.addData("Loop speed (Hz)", "%.1f", loopHz);
         telemetry.addData("Battery (V)", "%.2f", robot.loopOptimizer.getBatteryVoltage());
         telemetry.addData("Camera streaming", robot.vision.isCameraInitialized());
+        telemetry.addData("Vision cameras", robot.vision.getCameraStatuses());
+        telemetry.addData("Fresh vision observations", robot.vision.getObservations().size());
+        telemetry.addData("Vision errors", robot.vision.getErrors());
         telemetry.addData("Closest AprilTag with pose", robot.vision.getClosestAprilTag());
         // telemetry.addData("Color blobs", robot.vision.getDetectedBlobs().size());
     }

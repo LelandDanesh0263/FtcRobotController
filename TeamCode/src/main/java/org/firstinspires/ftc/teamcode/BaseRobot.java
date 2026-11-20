@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.util.DashboardManager;
 import org.firstinspires.ftc.teamcode.util.GamepadEx;
 import org.firstinspires.ftc.teamcode.util.LoopOptimizer;
 import org.firstinspires.ftc.teamcode.util.RobotTelemetry;
+import org.firstinspires.ftc.teamcode.util.VisionCameraConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,14 +26,19 @@ public class BaseRobot {
     private long previousLoopStartNanos;
 
     public BaseRobot(HardwareMap hardwareMap, Telemetry telemetry, Gamepad g1, Gamepad g2) {
+        this(hardwareMap, telemetry, g1, g2, new VisionCameraConfig[0]);
+    }
+
+    public BaseRobot(HardwareMap hardwareMap, Telemetry telemetry, Gamepad g1, Gamepad g2,
+                     VisionCameraConfig... visionCameras) {
         driverTelemetry = telemetry;
         loopOptimizer = new LoopOptimizer(hardwareMap);
         dashboard = new DashboardManager(telemetry);
         driver1 = new GamepadEx(g1);
         driver2 = new GamepadEx(g2);
 
-        // Hardware-agnostic vision subsystem
-        vision = new Vision(hardwareMap);
+        // No camera by default; explicit configs can independently enable field/turret cameras.
+        vision = visionCameras.length == 0 ? new Vision(hardwareMap) : new Vision(hardwareMap, visionCameras);
         subsystems.add(vision);
     }
 
