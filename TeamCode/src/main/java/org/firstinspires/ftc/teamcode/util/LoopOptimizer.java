@@ -23,8 +23,12 @@ public class LoopOptimizer {
         }
     }
 
+    public double getBatteryVoltage() {
+        return batteryVoltageSensor.getVoltage();
+    }
+
     public double getVoltageScalar() {
-        double voltage = batteryVoltageSensor.getVoltage();
+        double voltage = getBatteryVoltage();
         return (voltage > 0) ? (12.5 / voltage) : 1.0;
     }
 }
