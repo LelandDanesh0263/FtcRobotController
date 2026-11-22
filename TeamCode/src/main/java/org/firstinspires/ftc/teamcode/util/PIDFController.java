@@ -10,6 +10,7 @@ public class PIDFController {
     private double lastError = 0;
     private double lastTarget = 0;
     private double lastPosition = 0;
+    private double integralLimit = Double.POSITIVE_INFINITY;
     private final ElapsedTime timer = new ElapsedTime();
     private boolean firstRun = true;
 
@@ -18,25 +19,31 @@ public class PIDFController {
     }
 
     public double calculate(double target, double current) {
+        double dt = timer.seconds();
+        timer.reset();
+        return calculate(target, current, dt, params.kF);
+    }
+
+    /** Uses explicit elapsed seconds and per-tick feedforward. Pick one timing mode per instance. */
+    public double calculate(double target, double current, double dt, double feedforward) {
+        if (!Double.isFinite(dt) || dt < 0.0) {
+            throw new IllegalArgumentException("Elapsed time must be finite and nonnegative");
+        }
         lastTarget = target;
         lastPosition = current;
         double error = target - current;
 
         if (firstRun) {
             lastError = error;
-            timer.reset();
             firstRun = false;
-            return (params.kP * error) + params.kF;
+            return (params.kP * error) + feedforward;
         }
-
-        double dt = timer.seconds();
-        timer.reset();
 
         // Prevent integral windup when close to or at target
         if (Math.abs(error) < params.tolerance) {
             integralSum = 0;
         } else {
-            integralSum += error * dt;
+            integralSum = MathUtil.clamp(integralSum + error * dt, -integralLimit, integralLimit);
         }
 
         double derivative = (dt > 0) ? (error - lastError) / dt : 0;
@@ -45,7 +52,16 @@ public class PIDFController {
         return (params.kP * error)
                 + (params.kI * integralSum)
                 + (params.kD * derivative)
-                + params.kF;
+                + feedforward;
+    }
+
+    /** Bounds accumulated error in error-seconds. Set to zero to disable accumulation. */
+    public void setIntegralLimit(double limit) {
+        if (Double.isNaN(limit) || limit < 0.0) {
+            throw new IllegalArgumentException("Integral limit must be nonnegative");
+        }
+        integralLimit = limit;
+        integralSum = MathUtil.clamp(integralSum, -limit, limit);
     }
 
     public boolean atTarget() {

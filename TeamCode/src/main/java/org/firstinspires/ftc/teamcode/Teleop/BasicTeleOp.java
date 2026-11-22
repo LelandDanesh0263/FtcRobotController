@@ -28,6 +28,7 @@ public class BasicTeleOp extends LinearOpMode {
                 motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
 
+            telemetry.addLine("INIT");
             telemetry.addLine("Ready");
             telemetry.update();
             waitForStart();
